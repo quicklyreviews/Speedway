@@ -1,50 +1,77 @@
-# Cosmic Speedway
+# Cosmic Speedway: Verifiable Developer Lab & Orbitport cTRNG Demo
 
-Cosmic Speedway is a premium, high-fidelity, deterministic space racing game powered by [SpaceComputer](https://spacecomputer.io) Orbitport cTRNG (Cosmic True Random Number Generator) and KMS. 
+Cosmic Speedway is a developer-focused, high-fidelity demonstration of [SpaceComputer's Orbitport cTRNG](https://docs.spacecomputer.io) (Cosmic True Random Number Generator) and KMS (Key Management Service). 
 
-Analyze randomized spaceship telemetry, place your wagers, and watch a weighted, provably fair space derby unfold on a widescreen neon cyberpunk racetrack.
-
----
-
-## Key Features
-
-- **Provably Fair Space Derby:** Race outcomes are determined on-chain/in-enclave by true cosmic randomness harvested from space radiation, rendering the game mathematically unbiased and externally verifiable.
-- **Full-Width Widescreen Arena (`1200x600`):** Experience high-fidelity space racing on a scaled highway track featuring custom-drawn lane markers, checkered finish lines, and dynamic starfield drifts.
-- **Holographic Spacecraft Chambers:** Interactive cockpit selection cards displaying floating 3D-feeling spacecraft holograms, neon mini spec-meters, and unique active auras matching their signature colors.
-- **Cosmic Buffs & Hazards:** Races feature dynamically generated racetrack items. Spaceships surge forward with green sparks upon collecting power-ups (Quantum Packs, Warp Cores, Shield Cells) or lag behind with exhaust smoke upon striking obstacles (EMP Mines, Space Junk, Plasma Clouds) using decaying physics that preserve seed-based winners.
-- **Dynamic Overtaking Wobbles:** Realistic sinusoidal overtaking maneuvers where ships swap leads dynamically during the race, converging precisely at the finish line according to the predetermined entropy seed.
-- **Local Vocal Announcer:** Opt-in native browser `SpeechSynthesis` commentator calling out countdown status, leaders telemetry, and race results.
-- **Cryptographic Attestation Proofs:** Developer verification tab showing SHA256 seed hashing formulas, satellite enclaves public key checks, and IPFS beacon signatures.
+The application showcases how true cosmic radiation entropy, harvested by orbiting satellites, is used to drive deterministic, provably fair gameplay on a HTML5 canvas space speedway.
 
 ---
 
-## How It Works (Deterministic Fairness)
+## 🛰️ System Architecture
 
-Cosmic Speedway uses a hybrid cryptographic seed generation flow:
-1. **Satellite cTRNG API:** Fetches true cosmic radiation entropy signed inside SpaceComputer's orbital hardware enclave.
-2. **KMS & IPFS Fallback:** If the API falls back to the static 60s IPFS beacon, the system hashes the IPFS block with the KMS signature:
-   $$\text{Seed} = \text{SHA256}(\text{IPFS\_Beacon} + \text{KMS\_Signature})$$
-3. **Derived Winners:** The spaceship specifications and race velocities are derived deterministically using modulo math on slices of this seed. This guarantees that whoever holds the winning slice takes 1st place, making the race verifiable and reproducible.
+Cosmic Speedway uses a hybrid client-server model to protect API credentials while exposing complete cryptographic proof metadata to the frontend.
+
+```mermaid
+sequenceDiagram
+    participant Client as Web Browser (Canvas / UI)
+    participant Server as Next.js API Routes (/api/ctrng/random)
+    participant SDK as Orbitport SDK (Node.js)
+    participant API as Orbitport RPC Gateway
+    participant Sat as Orbital Enclave (Satellite cTRNG & KMS)
+
+    Client->>Server: POST /api/ctrng/random
+    Server->>SDK: sdk.ctrng.random({ src: "trng" })
+    SDK->>API: JSON-RPC (kms.Sign / trng.Random)
+    API->>Sat: Request true random bytes & signature
+    Sat-->>API: 256-bit entropy + ECDSA Attestation Signature
+    API-->>SDK: Attestation Proof JSON
+    SDK-->>Server: Attestation Proof JSON
+    Server->>Server: Cache Mock Satellite Public Keys (satellite-key.json)
+    Server-->>Client: HTTP 200 (Random Hex + Cryptographic Proofs)
+    Client->>Client: Parse seed, slice bytes, execute deterministic race physics
+```
 
 ---
 
-## Tech Stack
+## 🛠️ Key Developer Features
 
-| Technology | Purpose |
-|---|---|
-| **Next.js 16 (App Router)** | Web application framework and server routes |
-| **React 19 & TypeScript** | Component rendering and type safety |
-| **Motion** | Spring animations for cockpit wagers and holographic cards |
-| **HTML5 Canvas (2D)** | 60 FPS gameplay, particle systems, and neon rendering |
-| **`@spacecomputer-io/orbitport-sdk-ts`** | Satellite cTRNG & KMS API interface |
+1. **Satellite Enclave Verification:** Interactive "Attestation Proof" developer console displaying raw JSON payloads, KMS signatures, and verification statuses.
+2. **Deterministic Racing Math:** Spaceship speeds, active upgrades, overtaking wobbles, and final placements are computed using modulo math on specific slices of the 256-bit seed.
+3. **Dual Execution Modes:**
+   - **API Mode:** Requires credentials. Fetches live, signed entropy directly from the orbital satellite enclave.
+   - **IPFS Beacon Mode:** Public fallback. Fetches the latest 60-second IPNS beacon block and hashes it with the KMS signing key for local dynamic entropy.
+4. **Vector Speedway Renderer:** High-performance, 60 FPS HTML5 Canvas engine rendering a laser speedway with scrolling holographic grids, neon glowing guides, and active particle accelerators.
 
 ---
 
-## Setup & Running Locally
+## 📦 Directory Structure
 
-### Prerequisites
-- Node.js 20+
-- npm
+```text
+orbitport-playground/
+├── src/
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── beacon/latest/route.ts  # Fetches IPFS beacon block
+│   │   │   └── ctrng/random/route.ts   # Calls Orbitport API with credentials
+│   │   ├── layout.tsx                  # Root metadata & font imports
+│   │   ├── page.tsx                    # Main canvas engine & dashboard GUI
+│   │   └── globals.css                 # Global stylesheets & neon glows
+│   ├── components/
+│   │   ├── proof-panel.tsx             # Interactive cryptographic verification UI
+│   │   ├── copy-button.tsx             # Developer snippet copying utility
+│   │   └── status-badge.tsx            # Live API/IPFS state indicator
+│   └── lib/
+│       ├── orbitport.ts                # OrbitportSDK constructor wrapper
+│       ├── verify-signature.ts         # ECDSA secp256k1 signature verification
+│       └── kms-helper.ts               # Fallback KMS hashing helpers
+├── public/
+│   └── game-assets/                    # Transparent PNG spacecraft & track tiles
+├── satellite-key.json                  # Mock public key enclave cache
+└── README.md                           # Developer reference manual
+```
+
+---
+
+## 🚀 Quick Start
 
 ### 1. Install Dependencies
 ```bash
@@ -52,17 +79,21 @@ npm install
 ```
 
 ### 2. Configure Environment Variables
-Copy the example environment template:
+Copy the template file:
 ```bash
 cp .env.example .env.local
 ```
-*(Optional)* Add your client credentials inside `.env.local` to enable official signature checks:
-- `ORBITPORT_CLIENT_ID`
-- `ORBITPORT_CLIENT_SECRET`
 
-If left blank, the game runs in public **IPFS-Only Beacon Mode** automatically.
+Configure credentials (optional):
+```ini
+ORBITPORT_CLIENT_ID=your_client_id
+ORBITPORT_CLIENT_SECRET=your_client_secret
+ORBITPORT_API_URL=https://op.spacecomputer.io
+```
 
-### 3. Run Development Server
+*If credentials are left empty, the application falls back automatically to the public **IPFS Beacon Mode**.*
+
+### 3. Start Development Server
 ```bash
 npm run dev
 ```
@@ -70,7 +101,96 @@ Open [http://localhost:5669](http://localhost:5669) in your browser.
 
 ---
 
-## Security & Verification
+## 📡 API Endpoints
 
-- **Secure Secrets:** API secrets are only handled server-side. The client calls safe server routes (`/api/ctrng/random` and `/api/beacon/latest`) to request randomness.
-- **Anti-Manipulation:** The game uses zero client-side pseudo-randomness (`Math.random`) for physics or racing outcomes. Every movement, collision, and lead change is bound to the verifiable satellite payload.
+### `POST /api/ctrng/random`
+Requests 256 bits of cosmic entropy.
+
+**Sample Response (API Mode - Signed):**
+```json
+{
+  "success": true,
+  "randomHex": "5f3a9e...",
+  "source": "trng",
+  "service": "Orbitport cTRNG API",
+  "timestamp": 1781223940000,
+  "requestId": "req-9a3b8c...",
+  "provider": "SpaceComputer Satellite Enclave",
+  "signature": {
+    "value": "3045022100e4...",
+    "pk": "04b5c7...",
+    "algo": "ECDSA (secp256k1)"
+  },
+  "ctrngVerified": true
+}
+```
+
+---
+
+## 💻 Integration Code Snippets
+
+### 1. Fetch Randomness via Orbitport SDK (TypeScript)
+```typescript
+import { OrbitportSDK } from "@spacecomputer-io/orbitport-sdk-ts";
+
+const sdk = new OrbitportSDK({
+  config: {
+    clientId: process.env.ORBITPORT_CLIENT_ID,
+    clientSecret: process.env.ORBITPORT_CLIENT_SECRET,
+    apiUrl: process.env.ORBITPORT_API_URL || "https://op.spacecomputer.io"
+  }
+});
+
+async function getCosmicSeed() {
+  const response = await sdk.ctrng.random({ src: "trng" });
+  return response.data.randomHex; // 64-character hexadecimal string
+}
+```
+
+### 2. Verify Satellite Signature Locally (Node.js)
+```typescript
+import * as crypto from "crypto";
+
+export function verifySatelliteSignature(
+  randomHex: string,
+  signatureHex: string,
+  publicKeyHex: string
+): boolean {
+  try {
+    const verifier = crypto.createVerify("sha256");
+    verifier.update(Buffer.from(randomHex, "hex"));
+    
+    return verifier.verify(
+      Buffer.from(publicKeyHex, "hex"),
+      Buffer.from(signatureHex, "hex")
+    );
+  } catch (err) {
+    console.error("Signature verification failed:", err);
+    return false;
+  }
+}
+```
+
+---
+
+## 🧮 Mathematical Determinism Proof
+
+To guarantee that the front-end layout is fully provable and immune to execution tampering, spaceships are simulated deterministically using modulo slicing on the cosmic seed:
+
+```typescript
+// Slicing the 256-bit (64 hex characters) seed into four 16-character chunks
+const seed = "5f3a9e8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f";
+
+const carVariables = CAR_NAMES.map((_, idx) => {
+  // Extract 64-bit slice (16 hex chars = 8 bytes)
+  const slice = seed.slice(idx * 16, (idx + 1) * 16);
+  const val = BigInt("0x" + slice);
+
+  // Derive specs deterministically
+  const boostTime = 0.3 + Number(val % 40n) / 100; // Trigger threshold
+  const boostAmount = 0.03 + Number(val % 5n) / 100; // Acceleration delta
+  
+  return { boostTime, boostAmount };
+});
+```
+This guarantees that **the winner is determined at the instant the seed is generated**, and the front-end animation is simply a graphical replay of the cryptographically sealed result.

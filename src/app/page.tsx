@@ -618,43 +618,55 @@ export default function OrbitRushHome() {
       ctx.closePath();
     };
 
-    // Outer Wall Glow (Cyan)
+    // Outer Wall Glow (Bright Cyan Laser Rail)
     ctx.save();
     buildConcentricPath(50);
-    ctx.lineWidth = 5;
-    ctx.strokeStyle = "rgba(0, 212, 255, 0.14)";
-    ctx.shadowBlur = 6;
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = "rgba(0, 212, 255, 0.85)";
+    ctx.shadowBlur = 12;
     ctx.shadowColor = "#00d4ff";
     ctx.stroke();
     ctx.restore();
 
-    // Inner Wall Glow (Magenta)
+    // Inner Wall Glow (Bright Magenta Laser Rail)
     ctx.save();
     buildConcentricPath(-50);
-    ctx.lineWidth = 5;
-    ctx.strokeStyle = "rgba(255, 77, 106, 0.14)";
-    ctx.shadowBlur = 6;
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = "rgba(255, 77, 106, 0.85)";
+    ctx.shadowBlur = 12;
     ctx.shadowColor = "#ff4d6a";
     ctx.stroke();
     ctx.restore();
 
-    // Asphalt Foundation (100px wide)
+    // Holographic Energy Pathway (Dark Translucent Cyber Base)
     buildConcentricPath(0);
     ctx.lineWidth = 100;
-    ctx.strokeStyle = "#04040a";
+    ctx.strokeStyle = "rgba(6, 10, 32, 0.72)";
     ctx.stroke();
 
+    // Deep Space Energy Glow Underlay
     buildConcentricPath(0);
-    ctx.lineWidth = 94;
-    ctx.strokeStyle = "#080816";
+    ctx.lineWidth = 96;
+    ctx.strokeStyle = "rgba(79, 70, 229, 0.14)";
     ctx.stroke();
 
-    // Dash Lane Lines
+    // Scrolling Holographic Grid Ribs
     ctx.save();
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = "rgba(0, 212, 255, 0.18)";
+    buildConcentricPath(0);
+    ctx.lineWidth = 92;
+    ctx.strokeStyle = "rgba(0, 212, 255, 0.07)";
+    const ribOffset = -(Date.now() / 80) % 40;
+    ctx.setLineDash([1.5, 38.5]);
+    ctx.lineDashOffset = ribOffset;
+    ctx.stroke();
+    ctx.restore();
+
+    // Glowing Laser Lane Guides
+    ctx.save();
+    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = "rgba(0, 212, 255, 0.28)";
     const dashOffset = -(Date.now() / 100) % 20;
-    ctx.setLineDash([6, 12]);
+    ctx.setLineDash([8, 16]);
     ctx.lineDashOffset = dashOffset;
     
     buildConcentricPath(-25);
